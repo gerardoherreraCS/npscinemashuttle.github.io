@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Cinema Shuttle · ¿Cómo lo hicimos?</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #0c0c0c;
+    --white: #f7f4ef;
+    --gold: #d4a843;
+    --gold-dim: rgba(212,168,67,0.15);
+    --gray: #1c1c1c;
+    --gray2: #2a2a2a;
+    --muted: #666;
+    --green: #22c55e;
+    --red: #ef4444;
+    --yellow: #f59e0b;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Ambient glow */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(212,168,67,0.06) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .card {
+    width: 100%;
+    max-width: 480px;
+    background: var(--gray);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 40px 32px 36px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), #f0c96a, var(--gold));
+  }
+
+  /* Logo / Brand */
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+  .brand-icon {
+    width: 36px; height: 36px;
+    background: var(--gold);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+  }
+  .brand-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--white);
+  }
+  .brand-sub {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-top: 1px;
+  }
+
+  /* Step screens */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+  /* Project badge */
+  .project-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(212,168,67,0.3);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: clamp(22px, 5vw, 28px);
+    line-height: 1.2;
+    margin-bottom: 10px;
+    color: var(--white);
+  }
+
+  .subtitle {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    font-weight: 300;
+  }
+
+  /* NPS Score grid */
+  .score-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin-bottom: 10px;
+  }
+
+  .score-grid {
+    display: grid;
+    grid-template-columns: repeat(11, 1fr);
+    gap: 5px;
+    margin-bottom: 28px;
+  }
+
+  .score-btn {
+    aspect-ratio: 1;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    background: var(--gray2);
+    color: var(--muted);
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: clamp(11px, 2vw, 14px);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .score-btn:hover {
+    background: var(--gold-dim);
+    border-color: var(--gold);
+    color: var(--gold);
+    transform: translateY(-2px);
+  }
+
+  .score-btn.selected-red    { background: rgba(239,68,68,0.2);  border-color: #ef4444; color: #ef4444; transform: scale(1.08); }
+  .score-btn.selected-yellow { background: rgba(245,158,11,0.2); border-color: #f59e0b; color: #f59e0b; transform: scale(1.08); }
+  .score-btn.selected-green  { background: rgba(34,197,94,0.2);  border-color: #22c55e; color: #22c55e; transform: scale(1.08); }
+
+  /* Comment */
+  .input-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: block;
+  }
+
+  textarea {
+    width: 100%;
+    background: var(--gray2);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    padding: 14px 16px;
+    resize: none;
+    height: 100px;
+    transition: border-color 0.2s;
+    outline: none;
+    margin-bottom: 24px;
+  }
+  textarea:focus { border-color: var(--gold); }
+  textarea::placeholder { color: var(--muted); }
+
+  /* Aspect tags */
+  .aspects-label {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: block;
+  }
+  .aspects {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 28px;
+  }
+  .aspect-tag {
+    padding: 7px 14px;
+    border-radius: 100px;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    background: var(--gray2);
+    color: var(--muted);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+  }
+  .aspect-tag:hover { border-color: rgba(212,168,67,0.5); color: var(--white); }
+  .aspect-tag.selected { background: var(--gold-dim); border-color: var(--gold); color: var(--gold); }
+
+  /* Button */
+  .btn {
+    width: 100%;
+    background: var(--gold);
+    color: var(--black);
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn:hover { background: #e8bc5a; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-ghost {
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    color: var(--muted);
+    margin-top: 10px;
+    font-size: 13px;
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.04); color: var(--white); transform: none; }
+
+  /* Score preview */
+  .score-preview {
+    text-align: center;
+    margin-bottom: 20px;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .score-big {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 52px;
+    line-height: 1;
+    transition: color 0.3s;
+  }
+  .score-desc {
+    font-size: 12px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 4px;
+    transition: color 0.3s;
+  }
+
+  /* Thank you */
+  .thanks-icon {
+    font-size: 56px;
+    text-align: center;
+    margin-bottom: 16px;
+    animation: pop 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+  }
+  @keyframes pop { from { transform:scale(0.5); opacity:0; } to { transform:scale(1); opacity:1; } }
+  .thanks-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .thanks-sub {
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+  .thanks-summary {
+    background: var(--gray2);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  .thanks-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    font-size: 13px;
+  }
+  .thanks-row:last-child { border-bottom: none; }
+  .thanks-row-label { color: var(--muted); }
+  .thanks-row-val { font-weight: 700; font-family: 'Syne', sans-serif; }
+
+  /* Progress dots */
+  .progress {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 24px;
+  }
+  .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--gray2);
+    transition: all 0.3s;
+  }
+  .dot.active { background: var(--gold); width: 20px; border-radius: 3px; }
+  .dot.done { background: rgba(212,168,67,0.4); }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Brand -->
+  <div class="brand">
+    <div class="brand-icon">🎬</div>
+    <div>
+      <div class="brand-name">Cinema Shuttle</div>
+      <div class="brand-sub">Logística Audiovisual · México</div>
+    </div>
+  </div>
+
+  <!-- STEP 1: Score -->
+  <div id="s1" class="screen active">
+    <div class="project-badge">
+      📋 <span id="project-name-badge">Encuesta de proyecto</span>
+    </div>
+    <h1>¿Qué tan probable es que nos recomiendes?</h1>
+    <p class="subtitle">Del 0 al 10, ¿cómo calificarías el servicio de Cinema Shuttle en este proyecto?</p>
+
+    <div class="score-preview">
+      <div class="score-big" id="score-big" style="color: var(--muted);">—</div>
+      <div class="score-desc" id="score-desc" style="color: var(--muted);">Selecciona una calificación</div>
+    </div>
+
+    <div class="score-label">
+      <span>Poco probable</span>
+      <span>Muy probable</span>
+    </div>
+    <div class="score-grid" id="score-grid">
+      <!-- Generated by JS -->
+    </div>
+
+    <button class="btn" id="btn-s1" disabled onclick="goTo(2)">Continuar →</button>
+  </div>
+
+  <!-- STEP 2: Aspects + Comment -->
+  <div id="s2" class="screen">
+    <h1>¿Qué destacarías?</h1>
+    <p class="subtitle">Selecciona los aspectos más relevantes de tu experiencia.</p>
+
+    <span class="aspects-label">Aspectos del servicio</span>
+    <div class="aspects" id="aspects">
+      <div class="aspect-tag" onclick="toggleAspect(this)">⚡ Rapidez</div>
+      <div class="aspect-tag" onclick="toggleAspect(this)">📦 Inventario completo</div>
+      <div class="aspect-tag" onclick="toggleAspect(this)">🤝 Atención</div>
+      <div class="aspect-tag" onclick="toggleAspect(this)">🚛 Logística puntual</div>
+      <div class="aspect-tag" onclick="toggleAspect(this)">💬 Comunicación</div>
+      <div class="aspect-tag" onclick="toggleAspect(this)">💰 Precio justo</div>
+      <div class="aspect-tag" onclick="toggleAspect(this)">🔧 Equipo en buen estado</div>
+      <div class="aspect-tag" onclick="toggleAspect(this)">📋 Proceso claro</div>
+    </div>
+
+    <span class="input-label">Comentario (opcional)</span>
+    <textarea id="comment" placeholder="Cuéntanos qué funcionó bien o qué podríamos mejorar..."></textarea>
+
+    <button class="btn" onclick="goTo(3)">Enviar calificación ✓</button>
+    <button class="btn btn-ghost" onclick="goTo(1)">← Atrás</button>
+  </div>
+
+  <!-- STEP 3: Thank you -->
+  <div id="s3" class="screen">
+    <div class="thanks-icon" id="thanks-icon">⭐</div>
+    <div class="thanks-title" id="thanks-title">¡Gracias por tu feedback!</div>
+    <p class="thanks-sub">Tu opinión nos ayuda a mejorar cada producción. Cinema Shuttle valora tu tiempo.</p>
+
+    <div class="thanks-summary">
+      <div class="thanks-row">
+        <span class="thanks-row-label">Proyecto</span>
+        <span class="thanks-row-val" id="summary-project">—</span>
+      </div>
+      <div class="thanks-row">
+        <span class="thanks-row-label">Calificación NPS</span>
+        <span class="thanks-row-val" id="summary-score" style="color: var(--gold);">—</span>
+      </div>
+      <div class="thanks-row">
+        <span class="thanks-row-label">Categoría</span>
+        <span class="thanks-row-val" id="summary-cat">—</span>
+      </div>
+      <div class="thanks-row" id="summary-aspects-row">
+        <span class="thanks-row-label">Aspectos</span>
+        <span class="thanks-row-val" id="summary-aspects" style="font-size:11px; text-align:right; max-width:60%;">—</span>
+      </div>
+    </div>
+
+    <button class="btn btn-ghost" onclick="location.reload()">Enviar otra respuesta</button>
+  </div>
+
+  <!-- Progress dots -->
+  <div class="progress">
+    <div class="dot active" id="d1"></div>
+    <div class="dot" id="d2"></div>
+    <div class="dot" id="d3"></div>
+  </div>
+</div>
+
+<script>
+  // Read URL params
+  const params = new URLSearchParams(window.location.search);
+  const projectName = params.get('proyecto') || 'Proyecto Cinema Shuttle';
+  const producerName = params.get('producer') || '';
+
+  // Set project name in UI
+  document.getElementById('project-name-badge').textContent = projectName;
+  if (producerName) {
+    document.querySelector('#s1 h1').textContent = `Hola ${producerName}, ¿qué tan probable es que nos recomiendes?`;
+  }
+  document.getElementById('summary-project').textContent = projectName;
+
+  // Build score grid
+  let selectedScore = null;
+  const grid = document.getElementById('score-grid');
+  for (let i = 0; i <= 10; i++) {
+    const btn = document.createElement('button');
+    btn.className = 'score-btn';
+    btn.textContent = i;
+    btn.onclick = () => selectScore(i, btn);
+    grid.appendChild(btn);
+  }
+
+  function getScoreClass(n) {
+    if (n <= 6) return 'selected-red';
+    if (n <= 8) return 'selected-yellow';
+    return 'selected-green';
+  }
+  function getScoreColor(n) {
+    if (n <= 6) return 'var(--red)';
+    if (n <= 8) return 'var(--yellow)';
+    return 'var(--green)';
+  }
+  function getScoreLabel(n) {
+    if (n <= 3)  return 'Muy insatisfecho';
+    if (n <= 6)  return 'Hay que mejorar';
+    if (n <= 8)  return 'Bien, pero puede ser mejor';
+    if (n === 9) return 'Muy satisfecho';
+    return '¡Promotor activo!';
+  }
+  function getCatLabel(n) {
+    if (n <= 6) return '❌ Detractor';
+    if (n <= 8) return '😐 Pasivo';
+    return '🌟 Promotor';
+  }
+
+  function selectScore(n, el) {
+    selectedScore = n;
+    document.querySelectorAll('.score-btn').forEach(b => {
+      b.className = 'score-btn';
+    });
+    el.className = `score-btn ${getScoreClass(n)}`;
+    const color = getScoreColor(n);
+    document.getElementById('score-big').textContent = n;
+    document.getElementById('score-big').style.color = color;
+    document.getElementById('score-desc').textContent = getScoreLabel(n);
+    document.getElementById('score-desc').style.color = color;
+    document.getElementById('btn-s1').disabled = false;
+  }
+
+  function toggleAspect(el) {
+    el.classList.toggle('selected');
+  }
+
+  function goTo(step) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.dot').forEach((d,i) => {
+      d.classList.remove('active','done');
+      if (i < step-1) d.classList.add('done');
+      if (i === step-1) d.classList.add('active');
+    });
+    document.getElementById('s' + step).classList.add('active');
+    if (step === 3) submitNPS();
+  }
+
+  function submitNPS() {
+    const aspects = [...document.querySelectorAll('.aspect-tag.selected')].map(el => el.textContent.trim()).join(', ');
+    const comment = document.getElementById('comment').value.trim();
+    const cat = getCatLabel(selectedScore);
+
+    document.getElementById('summary-score').textContent = selectedScore + ' / 10';
+    document.getElementById('summary-cat').textContent = cat;
+    document.getElementById('summary-aspects').textContent = aspects || '—';
+
+    // Set thanks icon + title based on score
+    if (selectedScore >= 9) {
+      document.getElementById('thanks-icon').textContent = '🌟';
+      document.getElementById('thanks-title').textContent = '¡Nos alegra mucho!';
+    } else if (selectedScore >= 7) {
+      document.getElementById('thanks-icon').textContent = '👍';
+      document.getElementById('thanks-title').textContent = '¡Gracias por tu feedback!';
+    } else {
+      document.getElementById('thanks-icon').textContent = '💪';
+      document.getElementById('thanks-title').textContent = 'Tomaremos nota para mejorar';
+    }
+
+    // Send to Google Sheets via Apps Script Web App URL (configure below)
+    const SHEET_URL = params.get('sheet_url') || '';
+    if (SHEET_URL) {
+      fetch(SHEET_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          proyecto: projectName,
+          producer: producerName,
+          score: selectedScore,
+          categoria: cat.replace(/[^a-zA-Z ]/g,'').trim(),
+          aspectos: aspects,
+          comentario: comment,
+          fecha: new Date().toLocaleString('es-MX')
+        })
+      });
+    }
+  }
+</script>
+</body>
+</html>
