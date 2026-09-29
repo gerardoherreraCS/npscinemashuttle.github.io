@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html>
+<head>
+<base target="_top">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; margin:0; background:#F5F7F0; color:#191C16; }
+  .top { background:#191C16; color:#fff; padding:18px 16px 0 16px; }
+  .top h1 { margin:0 0 4px 0; font-size:18px; }
+  .top .proyecto { font-size:13px; color:#C9D1BC; margin-bottom:12px; min-height:16px; }
+  .tabs { display:flex; gap:4px; }
+  .tab { flex:1; text-align:center; padding:10px 6px; border-radius:10px 10px 0 0; background:#2C3024; color:#C9D1BC; font-size:14px; cursor:pointer; border:none; font-family:inherit; }
+  .tab.activo { background:#F5F7F0; color:#191C16; font-weight:bold; }
+  .contenido { max-width:520px; margin:0 auto; padding:16px 12px 60px 12px; }
+  .card { background:#fff; border-radius:12px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  label { display:block; font-size:13px; font-weight:bold; color:#4B5320; margin:14px 0 4px 0; }
+  label .req { color:#C0392B; }
+  .ayuda { font-size:12px; color:#777; margin-top:4px; }
+  input[type=text], input[type=number], input[type=date], textarea, select {
+    width:100%; padding:9px 10px; border:1px solid #D9D9D9; border-radius:8px; font-size:14px; font-family:inherit; background:#fff;
+  }
+  textarea { min-height:70px; resize:vertical; }
+  .fila2 { display:flex; gap:10px; flex-wrap:wrap; }
+  .fila2 > div { flex:1; min-width:120px; }
+  button.enviar {
+    width:100%; margin-top:20px; padding:13px; border:none; border-radius:10px;
+    background:#6E8241; color:#fff; font-size:15px; font-weight:bold; cursor:pointer;
+  }
+  button.enviar:disabled { background:#B9C4A2; cursor:not-allowed; }
+  .estrellas { font-size:30px; letter-spacing:4px; cursor:pointer; user-select:none; }
+  .estrellas span { color:#DDD; }
+  .estrellas span.on { color:#F5C947; }
+  .mensaje { margin-top:14px; padding:12px; border-radius:8px; font-size:14px; display:none; }
+  .mensaje.ok { background:#E4EEDD; color:#4B5320; display:block; }
+  .mensaje.error { background:#F3D6C9; color:#8A2E1B; display:block; }
+  .oculto { display:none; }
+</style>
+</head>
+<body>
+
+<div class="top">
+  <h1>🚐 Cinema Shuttle — Transporte</h1>
+  <div class="proyecto" id="lblProyecto">Cargando…</div>
+  <div class="tabs">
+    <button type="button" class="tab activo" id="tabSolicitarBtn" onclick="mostrarTab('solicitar')">Solicitar transporte</button>
+    <button type="button" class="tab" id="tabCalificarBtn" onclick="mostrarTab('calificar')">Calificar servicio</button>
+  </div>
+</div>
+
+<div class="contenido">
+
+  <!-- ===================== SOLICITAR ===================== -->
+  <div id="tabSolicitar" class="card">
+    <label>Tu nombre (quién solicita) <span class="req">*</span></label>
+    <input type="text" id="solicitante" placeholder="Ej. Ana López — Producción">
+
+    <label>¿Para qué es esta unidad? (concepto / uso) <span class="req">*</span></label>
+    <input type="text" id="concepto" placeholder="Ej. Van del director, Crew van, Camión vestuario…">
+
+    <div class="fila2">
+      <div>
+        <label>Vehículo que necesitas <span class="req">*</span></label>
+        <select id="vehiculo" disabled><option value="">Cargando opciones…</option></select>
+      </div>
+      <div>
+        <label>¿Cuántas unidades?</label>
+        <input type="number" id="cantidad" min="1" max="20" value="1">
+      </div>
+    </div>
+
+    <div class="fila2">
+      <div>
+        <label>Pasajeros aprox. (por unidad)</label>
+        <input type="number" id="pax" min="1" placeholder="Ej. 8">
+      </div>
+      <div>
+        <label>¿Chofer bilingüe?</label>
+        <select id="bilingue"><option value="no">No</option><option value="si">Sí</option></select>
+      </div>
+    </div>
+
+    <label>Tipo de servicio</label>
+    <select id="modalidad">
+      <option value="1">Día completo (CDMX)</option>
+      <option value="F">Foráneo</option>
+      <option value="T">Transfer (aeropuerto / traslado)</option>
+    </select>
+
+    <div class="fila2">
+      <div>
+        <label>Desde <span class="req">*</span></label>
+        <input type="date" id="fechaDesde">
+      </div>
+      <div>
+        <label>Hasta <span class="req">*</span></label>
+        <input type="date" id="fechaHasta">
+      </div>
+    </div>
+    <div class="ayuda" id="ayudaFechas"></div>
+
+    <label>Horario / llamado (opcional)</label>
+    <input type="text" id="horario" placeholder="Ej. Llamado 6:00 am en locación">
+
+    <label>Observaciones (opcional)</label>
+    <textarea id="observaciones" placeholder="Locación, requisitos (hielera, rack…), algo que debamos saber…"></textarea>
+
+    <button type="button" class="enviar" id="btnSolicitar" onclick="enviarSolicitud()" disabled>Enviar solicitud</button>
+    <div class="mensaje" id="msjSolicitar"></div>
+  </div>
+
+  <!-- ===================== CALIFICAR ===================== -->
+  <div id="tabCalificar" class="card oculto">
+    <label>Fecha del servicio</label>
+    <input type="date" id="calFecha">
+
+    <label>Proyecto</label>
+    <input type="text" id="calProyecto" placeholder="Nombre del proyecto">
+
+    <div class="fila2">
+      <div>
+        <label>Nombre del chofer</label>
+        <input type="text" id="calChofer" placeholder="Si lo recuerdas">
+      </div>
+      <div>
+        <label>Placas de la unidad</label>
+        <input type="text" id="calPlacas" placeholder="Si las recuerdas">
+      </div>
+    </div>
+
+    <label>¿Cómo calificas al chofer?</label>
+    <div class="estrellas" id="estrellasChofer" data-valor="0"></div>
+
+    <label>¿Cómo calificas la unidad?</label>
+    <div class="estrellas" id="estrellasUnidad" data-valor="0"></div>
+
+    <label>Comentarios (opcional)</label>
+    <textarea id="calComentarios" placeholder="Cuéntanos qué tal estuvo el servicio"></textarea>
+
+    <button type="button" class="enviar" id="btnCalificar" onclick="enviarCalificacion()">Enviar calificación</button>
+    <div class="mensaje" id="msjCalificar"></div>
+  </div>
+
+</div>
+
+<script>
+function $(id) { return document.getElementById(id); }
+
+function mostrarTab(nombre) {
+  $('tabSolicitar').classList.toggle('oculto', nombre !== 'solicitar');
+  $('tabCalificar').classList.toggle('oculto', nombre !== 'calificar');
+  $('tabSolicitarBtn').classList.toggle('activo', nombre === 'solicitar');
+  $('tabCalificarBtn').classList.toggle('activo', nombre === 'calificar');
+}
+
+function mostrarMensaje(id, texto, ok) {
+  var m = $(id);
+  m.textContent = texto;
+  m.className = 'mensaje ' + (ok ? 'ok' : 'error');
+}
+
+// ---- Estrellas ----
+function construirEstrellas(idContenedor) {
+  var cont = $(idContenedor);
+  for (var i = 1; i <= 5; i++) {
+    var s = document.createElement('span');
+    s.textContent = '★';
+    s.dataset.valor = i;
+    s.onclick = function () {
+      var v = Number(this.dataset.valor);
+      cont.dataset.valor = v;
+      Array.prototype.forEach.call(cont.children, function (el) {
+        el.classList.toggle('on', Number(el.dataset.valor) <= v);
+      });
+    };
+    cont.appendChild(s);
+  }
+}
+function reiniciarEstrellas(idContenedor) {
+  var cont = $(idContenedor);
+  cont.dataset.valor = 0;
+  Array.prototype.forEach.call(cont.children, function (el) { el.classList.remove('on'); });
+}
+construirEstrellas('estrellasChofer');
+construirEstrellas('estrellasUnidad');
+
+// ---- Cargar opciones del formulario ----
+function cargarOpciones() {
+  google.script.run
+    .withSuccessHandler(function (datos) {
+      var sel = $('vehiculo');
+      if (!datos) {
+        sel.innerHTML = '<option value="">No se pudieron cargar las opciones</option>';
+        return;
+      }
+      $('lblProyecto').textContent = datos.proyecto ? ('Proyecto: ' + datos.proyecto) : '';
+      if (datos.proyecto) $('calProyecto').value = datos.proyecto;
+
+      sel.innerHTML = '';
+      if (!datos.categorias || !datos.categorias.length) {
+        sel.innerHTML = '<option value="">(Sin catálogo cargado — avisa a Cinema Shuttle)</option>';
+        return;
+      }
+      sel.appendChild(new Option('Elige una opción…', ''));
+      datos.categorias.forEach(function (c) { sel.appendChild(new Option(c, c)); });
+      sel.disabled = false;
+
+      if (datos.fechaInicio) {
+        ['fechaDesde', 'fechaHasta'].forEach(function (id) {
+          $(id).min = datos.fechaInicio;
+          $(id).max = datos.fechaFin;
+        });
+        $('ayudaFechas').textContent = 'Calendario del proyecto: del ' + bonita(datos.fechaInicio) + ' al ' + bonita(datos.fechaFin) + '.';
+        $('btnSolicitar').disabled = false;
+      } else {
+        $('ayudaFechas').textContent = '⚠️ El proyecto aún no tiene fecha de inicio. Pide a Cinema Shuttle que la capture antes de enviar.';
+      }
+    })
+    .withFailureHandler(function (err) {
+      $('vehiculo').innerHTML = '<option value="">Error al cargar</option>';
+      mostrarMensaje('msjSolicitar', 'No se pudieron cargar las opciones: ' + (err && err.message ? err.message : err), false);
+    })
+    .obtenerOpcionesFormulario();
+}
+
+function bonita(iso) {
+  var p = iso.split('-');
+  return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+// "Hasta" nunca antes de "Desde"
+$('fechaDesde').addEventListener('change', function () {
+  $('fechaHasta').min = this.value || $('fechaDesde').min;
+  if (!$('fechaHasta').value || $('fechaHasta').value < this.value) $('fechaHasta').value = this.value;
+});
+
+cargarOpciones();
+
+// ---- Enviar solicitud ----
+function enviarSolicitud() {
+  var btn = $('btnSolicitar');
+  $('msjSolicitar').className = 'mensaje';
+
+  var datos = {
+    solicitante: $('solicitante').value.trim(),
+    concepto: $('concepto').value.trim(),
+    vehiculo: $('vehiculo').value,
+    cantidad: $('cantidad').value,
+    paxSolicitado: $('pax').value,
+    bilingue: $('bilingue').value === 'si',
+    modalidad: $('modalidad').value,
+    fechaDesde: $('fechaDesde').value,
+    fechaHasta: $('fechaHasta').value,
+    horario: $('horario').value.trim(),
+    observaciones: $('observaciones').value.trim()
+  };
+  if (!datos.solicitante || !datos.concepto || !datos.vehiculo || !datos.fechaDesde || !datos.fechaHasta) {
+    mostrarMensaje('msjSolicitar', 'Llena los campos marcados con * (nombre, concepto, vehículo y fechas).', false);
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  google.script.run
+    .withSuccessHandler(function (resp) {
+      btn.disabled = false; btn.textContent = 'Enviar solicitud';
+      if (!resp) { mostrarMensaje('msjSolicitar', 'Respuesta vacía del servidor. Intenta de nuevo.', false); return; }
+      mostrarMensaje('msjSolicitar', resp.ok ? resp.mensaje : ('No se pudo enviar: ' + resp.mensaje), resp.ok);
+      if (resp.ok) {
+        ['concepto', 'pax', 'horario', 'observaciones'].forEach(function (id) { $(id).value = ''; });
+        $('cantidad').value = 1;
+      }
+    })
+    .withFailureHandler(function (err) {
+      btn.disabled = false; btn.textContent = 'Enviar solicitud';
+      mostrarMensaje('msjSolicitar', 'Ocurrió un error: ' + (err && err.message ? err.message : err), false);
+    })
+    .crearSolicitudCliente(datos);
+}
+
+// ---- Enviar calificación ----
+function enviarCalificacion() {
+  var btn = $('btnCalificar');
+  $('msjCalificar').className = 'mensaje';
+
+  var datos = {
+    fechaServicio: $('calFecha').value,
+    proyecto: $('calProyecto').value,
+    chofer: $('calChofer').value,
+    placas: $('calPlacas').value,
+    calificacionChofer: $('estrellasChofer').dataset.valor,
+    calificacionUnidad: $('estrellasUnidad').dataset.valor,
+    comentarios: $('calComentarios').value
+  };
+  if (Number(datos.calificacionChofer) === 0 && Number(datos.calificacionUnidad) === 0) {
+    mostrarMensaje('msjCalificar', 'Ponle al menos una calificación con estrellas.', false);
+    return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Enviando…';
+  google.script.run
+    .withSuccessHandler(function (resp) {
+      btn.disabled = false; btn.textContent = 'Enviar calificación';
+      mostrarMensaje('msjCalificar', resp ? resp.mensaje : 'Respuesta vacía del servidor.', !!(resp && resp.ok));
+      if (resp && resp.ok) {
+        $('calComentarios').value = '';
+        reiniciarEstrellas('estrellasChofer');
+        reiniciarEstrellas('estrellasUnidad');
+      }
+    })
+    .withFailureHandler(function (err) {
+      btn.disabled = false; btn.textContent = 'Enviar calificación';
+      mostrarMensaje('msjCalificar', 'Ocurrió un error: ' + (err && err.message ? err.message : err), false);
+    })
+    .registrarCalificacion(datos);
+}
+</script>
+</body>
+</html>
