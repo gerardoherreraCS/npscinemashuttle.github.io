@@ -13,7 +13,9 @@ Dos proyectos de Apps Script:
 
 ### Instalar
 1. Abre el MACHOTE → **Extensiones → Apps Script**.
-2. Reemplaza todo el contenido de `Código.gs` con `machote-solicitud/Codigo.gs`.
+2. Borra TODO el contenido de `Code.gs` (déjalo vacío o elimina el archivo). Luego crea 4 archivos de secuencia de comandos (**+ → Secuencia de comandos**) y pega en cada uno su parte:
+   `1_Configuracion`, `2_Catalogo_y_Cascada`, `3_Hoja_Solicitud`, `4_Formulario_Servidor`.
+   Apps Script los une solo (comparten variables y funciones). Al terminar de pegar cada uno, revisa que la última línea sea `}`.
 3. Abre el archivo HTML `Formulario` (o créalo: **+ → HTML**, nombre exacto `Formulario`) y reemplázalo con `machote-solicitud/Formulario.html`.
 4. Guarda, recarga la hoja y en el menú **🚐 Machote Transporte** corre **Configuración inicial completa**.
    - La pestaña `Solicitud` se renombra sola a **`Solicitudes Transporte`** (el nombre que lee el consolidador).

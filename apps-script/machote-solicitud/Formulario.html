@@ -41,7 +41,7 @@
 <body>
 
 <div class="top">
-  <h1>🚐 Cinema Shuttle — Transporte</h1>
+  <h1>&#128656; Cinema Shuttle — Transporte</h1>
   <div class="proyecto" id="lblProyecto">Cargando…</div>
   <div class="tabs">
     <button type="button" class="tab activo" id="tabSolicitarBtn" onclick="mostrarTab('solicitar')">Solicitar transporte</button>
@@ -165,7 +165,7 @@ function construirEstrellas(idContenedor) {
   var cont = $(idContenedor);
   for (var i = 1; i <= 5; i++) {
     var s = document.createElement('span');
-    s.textContent = '★';
+    s.textContent = String.fromCharCode(9733); // estrella
     s.dataset.valor = i;
     s.onclick = function () {
       var v = Number(this.dataset.valor);
@@ -214,7 +214,7 @@ function cargarOpciones() {
         $('ayudaFechas').textContent = 'Calendario del proyecto: del ' + bonita(datos.fechaInicio) + ' al ' + bonita(datos.fechaFin) + '.';
         $('btnSolicitar').disabled = false;
       } else {
-        $('ayudaFechas').textContent = '⚠️ El proyecto aún no tiene fecha de inicio. Pide a Cinema Shuttle que la capture antes de enviar.';
+        $('ayudaFechas').textContent = 'ATENCION: El proyecto aún no tiene fecha de inicio. Pide a Cinema Shuttle que la capture antes de enviar.';
       }
     })
     .withFailureHandler(function (err) {

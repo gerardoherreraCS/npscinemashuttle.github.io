@@ -134,9 +134,9 @@ const MARCAS_FIN = ['PROVEEDOR', 'SUMA TOTAL', 'GRAN TOTAL', 'COSTO TOTAL DEL PR
 // ====================== MENÚ ======================
 function onOpen() {
   SpreadsheetApp.getUi()
-    .createMenu('📊 Base Maestra Transporte')
-    .addItem('▶ Consolidar ahora (solo lo nuevo o modificado)', 'consolidarAhora')
-    .addItem('↻ Reprocesar TODO desde cero', 'reprocesarTodo')
+    .createMenu('Base Maestra Transporte')
+    .addItem('Consolidar ahora (solo lo nuevo o modificado)', 'consolidarAhora')
+    .addItem('Reprocesar TODO desde cero', 'reprocesarTodo')
     .addSeparator()
     .addItem('Activar actualización automática (cada hora)', 'activarAutomatico')
     .addItem('Desactivar actualización automática', 'desactivarAutomatico')
@@ -198,7 +198,7 @@ function ejecutar_(forzarTodo, interactivo) {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   try {
     prepararHojas_(ss);
-    estadoPanel_(ss, '⏳ Consolidando…', '');
+    estadoPanel_(ss, 'Consolidando...', '');
     var tz = ss.getSpreadsheetTimeZone();
     var alias = leerAlias_(ss);
 
@@ -270,9 +270,9 @@ function ejecutar_(forzarTodo, interactivo) {
     if (faltan > 0) {
       borrarTriggers_('continuarConsolidacion');
       ScriptApp.newTrigger('continuarConsolidacion').timeBased().after(60 * 1000).create();
-      estado = '⏳ En proceso: faltan ' + faltan + ' archivo(s). Continúa solo en ~1 minuto.';
+      estado = 'EN PROCESO: faltan ' + faltan + ' archivo(s). Continúa solo en ~1 minuto.';
     } else {
-      estado = '✅ Al día';
+      estado = 'AL DIA';
     }
     var detalle = 'Archivos en carpeta: ' + archivos.length + ' · Leídos en esta corrida: ' + procesados
       + (quitados ? ' · Quitados: ' + quitados : '')
@@ -286,8 +286,8 @@ function ejecutar_(forzarTodo, interactivo) {
       if (faltan > 0) avisar_(estado + '\n\n' + detalle + '\n\nPuedes cerrar el archivo: el proceso sigue en segundo plano. Revisa la hoja Panel.');
     }
   } catch (e) {
-    estadoPanel_(ss, '❌ Error', e.message);
-    ss.getSheetByName(H.LOG).appendRow([new Date(), '❌ Error', e.message, e.stack || '']);
+    estadoPanel_(ss, 'ERROR', e.message);
+    ss.getSheetByName(H.LOG).appendRow([new Date(), 'ERROR', e.message, e.stack || '']);
     if (interactivo) avisar_('Ocurrió un error: ' + e.message);
     else throw e;
   } finally {
@@ -832,12 +832,12 @@ function prepararPanel() {
   p.getRange('B8').setValue('CÓMO USARLO').setFontWeight('bold').setFontColor('#6E8241');
   p.getRange('B9:C15').setValues([
     ['1. Guarda los archivos', 'Mete cada archivo de proyecto (nuevo o anterior) en la carpeta de proyectos. Debe tener la pestaña "' + HOJA_ORIGEN + '".'],
-    ['2. Consolida', 'Menú 📊 Base Maestra Transporte → ▶ Consolidar ahora (o el botón verde de esta hoja).'],
+    ['2. Consolida', 'Menú Base Maestra Transporte → Consolidar ahora (o el botón verde de esta hoja).'],
     ['3. Revisa', '"Registro Archivos" dice qué se leyó y si algún archivo no tiene la pestaña o dio error.'],
     ['4. Reportes', 'Usa "BD Solicitudes" (una fila por unidad) y "BD Uso Diario" (una fila por unidad por día) para tablas dinámicas, Looker Studio o el Dashboard.'],
     ['5. Nombres repetidos', 'Si un proveedor/chofer aparece escrito de varias formas, agrégalo en la hoja "Alias" y vuelve a correr "Reprocesar TODO".'],
     ['6. Automático', 'Menú → "Activar actualización automática" para que se actualice sola cada hora.'],
-    ['Botón', 'Insertar → Dibujo → crea un rectángulo "CONSOLIDAR" → Guardar. Clic en el dibujo → ⋮ → Asignar secuencia de comandos → escribe: consolidarAhora'],
+    ['Botón', 'Insertar → Dibujo → crea un rectángulo "CONSOLIDAR" → Guardar. Clic en el dibujo → (tres puntos) → Asignar secuencia de comandos → escribe: consolidarAhora'],
   ]);
   p.getRange('B9:B15').setFontWeight('bold').setVerticalAlignment('top');
   p.getRange('C9:C15').setWrap(true);
